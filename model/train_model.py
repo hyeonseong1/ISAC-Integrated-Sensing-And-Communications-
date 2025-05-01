@@ -15,6 +15,14 @@ def train(K, N, lambda_, device):
     enc_opt = optim.Adam(enc.parameters(), lr=1e-4)
     dec_opt = optim.Adam(dec.parameters(), lr=1e-4)
 
+    # Scheduler (LR × 0.9 if plateau over 10 epochs, min LR = 1e-6)
+    enc_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        enc_opt, mode='min', factor=0.9, patience=10, min_lr=1e-6, verbose=True
+    )
+    dec_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(
+        dec_opt, mode='min', factor=0.9, patience=10, min_lr=1e-6, verbose=True
+    )
+
     # Initialization for K=32 using pre-trained 16-bit model
     if K == 32:
         tmp_enc = Encoder(16, N//2).to(device)
@@ -59,6 +67,9 @@ def train(K, N, lambda_, device):
         history['training'].append(loss.item())
         history['acsl'].append(acsl.item())
         history['comms'].append(comms.item())
+
+        enc_sched.step(loss.item())
+        dec_sched.step(loss.item())
 
         if epoch % 10 == 0:
             # Convert to dB scale
