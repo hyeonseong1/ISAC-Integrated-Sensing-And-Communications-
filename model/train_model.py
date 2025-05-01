@@ -17,10 +17,10 @@ def train(K, N, lambda_, device):
 
     # Scheduler (LR × 0.9 if plateau over 10 epochs, min LR = 1e-6)
     enc_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        enc_opt, mode='min', factor=0.9, patience=10, min_lr=1e-6, verbose=True
+        enc_opt, mode='min', factor=0.9, patience=10, min_lr=1e-6
     )
     dec_sched = torch.optim.lr_scheduler.ReduceLROnPlateau(
-        dec_opt, mode='min', factor=0.9, patience=10, min_lr=1e-6, verbose=True
+        dec_opt, mode='min', factor=0.9, patience=10, min_lr=1e-6
     )
 
     # Initialization for K=32 using pre-trained 16-bit model
