@@ -1,4 +1,4 @@
-# ISAC-Integrated-Sensing-And-Communications-
+# ISAC-Integrated-Sensing-And-Communications
 
 Original paper:  
 &emsp;arXiv:2503.23119 [eess.SP]  
