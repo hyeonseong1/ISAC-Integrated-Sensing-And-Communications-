@@ -1,8 +1,10 @@
 import torch
 import torch.optim as optim
 import numpy as np
+
 from model.EncDec import Encoder, Decoder
 from model.loss_fn import custom_loss
+from model.code_init import concatenated_code_initialization
 
 def train(K, N, lambda_, device):
     # Hyperparameters (Table I)
@@ -25,17 +27,12 @@ def train(K, N, lambda_, device):
 
     # Initialization for K=32 using pre-trained 16-bit model
     if K == 32:
-        tmp_enc = Encoder(16, N//2).to(device)
+        # 1) 16-bit 인코더 로드
+        tmp_enc = Encoder(16, N // 2).to(device)
         tmp_enc.load_state_dict(torch.load("pre-trained/encoder16.pth"), strict=True)
 
-        # Initialize 32-bit encoder with block-diagonal weights from 16-bit encoder
-        with torch.no_grad():
-            for (p16_name, p16), (p32_name, p32) in zip(tmp_enc.named_parameters(), enc.named_parameters()):
-                if p16.ndim == 2:
-                    blk = torch.block_diag(p16, p16)
-                    p32.copy_(blk)
-                else:
-                    p32.copy_(torch.cat([p16, p16], dim=0))
+        # 2) concatenated code 초기화 함수 호출
+        concatenated_code_initialization(enc, tmp_enc)
 
     history = {'training': [], 'acsl': [], 'comms': []}
 
@@ -78,4 +75,4 @@ def train(K, N, lambda_, device):
             comms_db = 10 * np.log10(comms.item())
             print(f"Epoch {epoch} | training {tot_db:.2f} dB | acsl {acsl_db:.2f} dB | comms {comms_db:.2f} dB")
 
-    return history, enc
+    return history, enc, dec
